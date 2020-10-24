@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/holo_orange_light"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/speechBtn"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="@null"
+            android:scaleType="fitXY"
+            android:src="@android:drawable/presence_audio_online" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,37 @@
+package com.example.indoornavi;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import java.io.File;
+
+public class DBAdapter {
+    private Context context;
+    private SQLiteDatabase db;
+
+    private static String DB_PATH = "/data/data/com.example.indoornavi/databases";
+    private static String DB_NAME = "/test.db";
+
+    public DBAdapter(Context context) {
+        super();
+        this.context = context;
+
+        File dbCopy = new File(DB_PATH + DB_NAME);
+
+        if (dbCopy.exists()) {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(dbCopy.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
+            this.db = db;
+        }
+    }
+
+    public void close() {
+        db.close();
+    }
+
+    public Cursor search(String sql) {
+        Cursor cursor = db.rawQuery(sql, null);
+
+        return cursor;
+    }
+}
