@@ -3,8 +3,6 @@ package com.example.indoornavi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
-import android.widget.Toast;
 
 public class MyBroadCastReceiver extends BroadcastReceiver {
     @Override
@@ -14,6 +12,9 @@ public class MyBroadCastReceiver extends BroadcastReceiver {
         if ("navigation-start".equals(action)) {
             Intent i = new Intent(context, NaviActivity.class) ;
             context.startActivity(i);
+        } else if("estimate-start".equals(action)) {
+
         }
+
     }
 }

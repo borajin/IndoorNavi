@@ -26,15 +26,11 @@ class WifiReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        //broadcast 로 단말기의 상태변화나 다른 단말기가 송신하는 메세지를 receive 할 수 있고 그에 따른 처리도 가능함.
-        //단말기 배터리가 부족하다거나 뭐 그런...
-
-        //인텐트 쪽에서 scan 한 상태가 되면 scan 결과 처리하는 braodcast (개발자가 custom status 도 처리 할 수 있음)
         if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action)) {
-            //real_scan(context);
-            test_scan(context);
+            real_scan(context);
+            //test_scan(context);
         } else {
-            //참고 :: fail 시 첫 스캔이면 아무 것도 반환 안 하고 n번째 스캔이면 results 에 이전 결과가 출력됨.
+            //첫 스캔이면 아무 것도 반환 안 하고 n번째 스캔이면 results 에 이전 결과가 출력됨.
             Toast.makeText(context, "측정 실패", Toast.LENGTH_SHORT).show();
         }
     }
@@ -43,18 +39,12 @@ class WifiReceiver extends BroadcastReceiver {
         List<SCANINFO> scanList = new ArrayList<>();
         List<ScanResult> wifiList = wifiManager.getScanResults();
 
-        long start = System.currentTimeMillis();
         for (ScanResult scanResult : wifiList) {
             scanList.add(new SCANINFO(scanResult.BSSID.replace(":", ""), scanResult.level));
         }
-        long end = System.currentTimeMillis();
-        System.out.println("scan time : " + (end - start)/1000.0);
 
-        start = System.currentTimeMillis();
         Estimate test = new Estimate(context, scanList);
         String scanResult = test.test_main();
-        end = System.currentTimeMillis();
-        System.out.println("estimate time : " + (end - start)/1000.0);
 
         if(scanResult.equals("NORESULT")) {
             Toast.makeText(context, "결과 없음", Toast.LENGTH_SHORT).show();
@@ -66,6 +56,8 @@ class WifiReceiver extends BroadcastReceiver {
 
             Toast.makeText(context, "측정 완료!", Toast.LENGTH_SHORT).show();
         }
+
+        wifiManager.startScan();
     }
 
     private void test_scan(Context context) {
@@ -83,7 +75,6 @@ class WifiReceiver extends BroadcastReceiver {
 
         List<SCANINFO> scanList = new ArrayList<>();
 
-        long start = System.currentTimeMillis();
         for (int i=0; i<testAps.length-1; i++) {
             String bssid;
             double rssi;
@@ -93,16 +84,10 @@ class WifiReceiver extends BroadcastReceiver {
 
             scanList.add(new SCANINFO(bssid, rssi));
         }
-        long end = System.currentTimeMillis();
-        System.out.println("scan time : " + (end - start)/1000.0);
 
-        start = System.currentTimeMillis();
         Estimate test = new Estimate(context, scanList);
         String scanResult = test.test_main();
-        end = System.currentTimeMillis();
-        System.out.println("estimate time : " + (end - start)/1000.0);
 
-        start = System.currentTimeMillis();
         if(scanResult.equals("NORESULT")) {
             Toast.makeText(context, "결과 없음", Toast.LENGTH_SHORT).show();
         } else {
@@ -113,8 +98,8 @@ class WifiReceiver extends BroadcastReceiver {
             ImageView cell = map.findViewById(y*100+x);
             cell.setImageResource(R.drawable.cell_location);
         }
-        end = System.currentTimeMillis();
-        System.out.println("ui edit time : " + (end - start)/1000.0);
+
+        wifiManager.startScan();
     }
 }
 

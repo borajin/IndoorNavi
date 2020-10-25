@@ -2,15 +2,12 @@ package com.example.indoornavi;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.BroadcastReceiver;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -20,7 +17,7 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     ImageButton speechStartBtn;
-    Speech speech;
+    STT stt;
     private MyBroadCastReceiver receiver;
 
     @Override
@@ -63,12 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void initUi() {
         speechStartBtn =  findViewById(R.id.speechBtn);
-        speech = new Speech(this);
+        stt = new STT(this);
 
         speechStartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                speech.startListen();
+                stt.startSTT();
             }
         });
     }
@@ -114,12 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        speech.endSpeech();
+        stt.endSTT();
         super.onDestroy();
-    }
-
-    private void moveNavi() {
-        Intent intent = new Intent(MainActivity.this, NaviActivity.class) ;
-        startActivity(intent);
     }
 }

@@ -1,6 +1,165 @@
 package com.example.indoornavi;
 
-public class TypoEdit {
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.widget.Toast;
+import java.util.ArrayList;
+
+public class STT {
+    final String[] SUBWAY_LINE_4_KEYWORDS = {"장전", "부산대", "구서"};
+    Context mContext;
+    Intent sttIntent;
+    SpeechRecognizer mRecognizer;
+    TypoEdit typoEdit = new TypoEdit();
+    String keyword = "";
+    TTS tts;
+
+    public STT(Context mContext) {
+        this.mContext = mContext;
+        sttIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        sttIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, mContext.getPackageName());
+        sttIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");//한국어 사용
+
+        tts = new TTS(mContext);
+    }
+    public void startSTT() {
+        mRecognizer = SpeechRecognizer.createSpeechRecognizer(mContext);
+        mRecognizer.setRecognitionListener(listener);
+        mRecognizer.startListening(sttIntent);
+    }
+
+    public void endSTT() {
+        if (mRecognizer != null) {
+            mRecognizer.destroy();
+            mRecognizer.cancel();
+            mRecognizer = null;
+        }
+
+        tts.endTTS();
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    private RecognitionListener listener = new RecognitionListener() {
+        @Override
+        public void onReadyForSpeech(Bundle bundle) {
+            ToastMsg("음성인식 시작");
+            tts.startTTS("말해");
+        }
+
+        @Override
+        public void onBeginningOfSpeech() {
+
+        }
+
+        @Override
+        public void onRmsChanged(float v) {
+
+        }
+
+        @Override
+        public void onBufferReceived(byte[] bytes) {
+
+        }
+
+        @Override
+        public void onEndOfSpeech() {
+
+        }
+
+        @Override
+        public void onError(int i) {
+            String error;
+
+            switch(i) {
+                case SpeechRecognizer.ERROR_AUDIO:
+                    error = "ERROR_AUDIO";
+                    break;
+                case SpeechRecognizer.ERROR_CLIENT:
+                    error = "RROR_CLIENT";
+                    break;
+                case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                    error = "ERROR_INSUFFICIENT_PERMISSIONS";
+                    break;
+                case SpeechRecognizer.ERROR_NETWORK:
+                    error = "ERROR_NETWORK";
+                    break;
+                case SpeechRecognizer.ERROR_NO_MATCH:
+                    error = "ERROR_NO_MATCH";
+                    break;
+                case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                    error = "ERROR_RECOGNIZER_BUSY";
+                    break;
+                case SpeechRecognizer.ERROR_SERVER:
+                    error = "ERROR_SERVER";
+                    break;
+                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                    error = "ERROR_SPEECH_TIMEOUT";
+                    break;
+                default:
+                    error = "UNKOWN ERROR";
+                    break;
+            }
+
+            ToastMsg("error : " + error);
+        }
+
+        @Override
+        public void onResults(Bundle results) {
+            ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+            String resultStr = "";
+
+            for(int i=0; i < matches.size(); i++) {
+                resultStr += matches.get(i);
+            }
+
+            if (resultStr.length() < 1) return;
+            resultStr = resultStr.replace(" ", "");
+
+            ToastMsg("음성인식 성공");
+            voiceOrderCheck(resultStr);
+        }
+
+
+        @Override
+        public void onPartialResults(Bundle bundle) {
+
+        }
+
+        @Override
+        public void onEvent(int i, Bundle bundle) {
+
+        }
+    };
+
+    //입력된 음성 메세지 확인 후 동작 처리
+    private void voiceOrderCheck(String speech) {
+
+        String subway_line_4_keyword = typoEdit.typo_edit(speech, SUBWAY_LINE_4_KEYWORDS);
+
+        if (subway_line_4_keyword.equals("ERROR")) {
+            tts.startTTS("알아듣지 못했어요. 다시 말씀해주세요.");
+        } else {
+            keyword = "navi@" + subway_line_4_keyword;
+            tts.startTTS(subway_line_4_keyword + "역으로 안내하겠습니다.");
+            mContext.sendBroadcast(new Intent("navigation-start"));
+        }
+    }
+
+    private void ToastMsg(final String msg) {
+        final String message = msg;
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+}
+
+class TypoEdit {
     final char[] ChoSung   = { 0x3131, 0x3132, 0x3134, 0x3137, 0x3138, 0x3139, 0x3141, 0x3142, 0x3143, 0x3145, 0x3146, 0x3147, 0x3148, 0x3149, 0x314a, 0x314b, 0x314c, 0x314d, 0x314e };
     // ㅏ      ㅐ      ㅑ      ㅒ      ㅓ      ㅔ      ㅕ      ㅖ      ㅗ      ㅘ      ㅙ      ㅚ      ㅛ      ㅜ      ㅝ      ㅞ      ㅟ      ㅠ      ㅡ      ㅢ      ㅣ
     final char[] JwungSung = { 0x314f, 0x3150, 0x3151, 0x3152, 0x3153, 0x3154, 0x3155, 0x3156, 0x3157, 0x3158, 0x3159, 0x315a, 0x315b, 0x315c, 0x315d, 0x315e, 0x315f, 0x3160, 0x3161, 0x3162, 0x3163 };
@@ -176,7 +335,7 @@ public class TypoEdit {
             }
         }
 
-        double m = max/7;
+        double m = max/5;
         if(m > min) {
             System.out.println(m + ", " + min + ", " + max);
             return edit_word;
@@ -186,6 +345,5 @@ public class TypoEdit {
         }
 
     }
-
-
 }
+
