@@ -18,6 +18,11 @@ class WifiReceiver extends BroadcastReceiver {
     private WifiManager wifiManager;
     private TableLayout map;
 
+    int past_x;
+    int past_y;
+
+    boolean first_start = true;
+
     public WifiReceiver(WifiManager wifiManager, TableLayout map) {
         this.wifiManager = wifiManager;
         this.map = map;
@@ -49,10 +54,20 @@ class WifiReceiver extends BroadcastReceiver {
         if(scanResult.equals("NORESULT")) {
             Toast.makeText(context, "결과 없음", Toast.LENGTH_SHORT).show();
         } else {
+            if(!first_start) {
+                ImageView past_cell = map.findViewById(past_y * 100 + past_x);
+                past_cell.setImageResource(R.drawable.cell_fill);
+            } else {
+                first_start = false;
+            }
+
             int x = Integer.parseInt(scanResult.split(",")[0]);
             int y = Integer.parseInt(scanResult.split(",")[1]);
-            ImageView cell = map.findViewById(y*100+x);
-            cell.setImageResource(R.drawable.cell_location);
+            ImageView current_cell = map.findViewById(y*100+x);
+            current_cell.setImageResource(R.drawable.cell_location);
+
+            past_x = x;
+            past_y = y;
 
             Toast.makeText(context, "측정 완료!", Toast.LENGTH_SHORT).show();
         }
