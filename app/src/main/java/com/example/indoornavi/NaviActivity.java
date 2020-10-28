@@ -48,7 +48,7 @@ public class NaviActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        receiverWifi = new WifiReceiver(wifiManager, map);
+        receiverWifi = new WifiReceiver(this, wifiManager, map);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         registerReceiver(receiverWifi, intentFilter);
