@@ -5,7 +5,7 @@ import android.database.Cursor;
 
 import java.util.ArrayList;
 import java.util.Vector;
-
+/*
 class node {
     int id;
     int x;
@@ -163,5 +163,5 @@ class Dikstra {
 
 
 
-
+*/
 
