@@ -36,38 +36,11 @@ public class Directions {
     }
 
     public void createMap() {
-        //지도 데이터베이스를 다익스트라 알고리즘 적용할 형태로 변환
-        DBAdapter db = new DBAdapter(mContext);
-        String sql = "select CELL_X, CELL_Y, LOCATION_INFO from TR_FPDB_MAP where LOCATION_INFO is not null;";
-        Cursor cursor = db.search(sql);
 
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                int cell_x = cursor.getInt(cursor.getColumnIndex("CELL_X"));
-                int cell_y = cursor.getInt(cursor.getColumnIndex("CELL_Y"));
-                String LOCATION_INFO = cursor.getString(cursor.getColumnIndex("LOCATION_INFO"));
+        m.add(new node(1, 1, 1, "교차로"));
 
-                m.add(new node(id, cell_x, cell_y, LOCATION_INFO));
-                id++;
-            }
-
-            //다익스트라에 쓸 weights 배열 만들기
-            dikstra = new Dikstra(m.size());
-            for (int i = 0; i < m.size(); i++) {
-                for (int j = 0; j < m.size(); j++) {
-                    double weight = Math.sqrt(Math.pow((m.get(i).x - m.get(j).x), 2) + Math.pow((m.get(i).y - m.get(j).y), 2));
-                    dikstra.input(m.get(i).id, m.get(j).id, weight);
-                }
-            }
-        }
-        cursor.close();
-
-        //db 닫기
-        try {
-            db.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        double weight = Math.sqrt(Math.pow((m.get(i).x - m.get(j).x), 2) + Math.pow((m.get(i).y - m.get(j).y), 2));
+        dikstra.input(m.get(i).id, m.get(j).id, weight);
     }
 
     public boolean startDirections(int x, int y) {
@@ -77,28 +50,8 @@ public class Directions {
         String destination = "2번 출구";
         String direction = getDirection(current_x, current_y, destination);
 
-        /*
-        //이때 자이로센서가 왼쪽, 오른쪽을 인식하면 원래 방향으로 돌아올 수 있도록 오른쪽, 왼쪽으로 복귀하라고 안내. (이건 어려울 거 같으니 일단 패스)
-        if (direction.equals("straight")) {
-            tts.startTTS("다음 점자블록까지 직진하세요");
-            return false;
-        } else if (direction.equals("right")) {
-            tts.startTTS("오른쪽으로 돌아 직진하세요");
-            return false;
-        } else if (direction.equals("left")) {
-            tts.startTTS("왼쪽으로 돌아 직진하세요");
-            return false;
-        } else if (direction.equals("arrive")) {
-            tts.startTTS("목적지에 도착했습니다.");
-            return true;
-        } else {
-            return false;
-        }
-
-         */
-
         System.out.println("경로 : " + direction);
-         return false;
+        return false;
     }
 
     public String getDirection(int x, int y, String destination) {
@@ -125,25 +78,6 @@ public class Directions {
 
         Vector<Integer> route = dikstra.start(start_node, end_node);
         return route.toString();
-
-        /*
-        double dis = Math.sqrt(Math.pow((m.get(end_node).x - m.get(start_node).x), 2) + Math.pow((m.get(end_node).y - m.get(start_node).y), 2));
-        if (dis < 2) {
-            return "arrive";
-        } else {
-            //route 로 진행방향 알아내기
-            float angle = (float) Math.toDegrees(Math.atan2(m.get(end_node).y - m.get(start_node).y, m.get(end_node).x - m.get(start_node).x));
-
-            if (angle >= 0 && angle < 80) {
-                return "left";
-            } else if (angle >= 80 && angle < 120) {
-                return "right";
-            } else {
-                return "straight";
-            }
-        }
-
-         */
     }
 }
 

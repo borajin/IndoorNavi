@@ -23,20 +23,17 @@ class WifiReceiver extends BroadcastReceiver {
 
     boolean first_start = true;
 
-    Directions navi;
-
     public WifiReceiver(Context context, WifiManager wifiManager, TableLayout map) {
         this.wifiManager = wifiManager;
         this.map = map;
-        navi = new Directions(context);
     }
 
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
         if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action)) {
-            //real_scan(context);
-            test_scan(context);
+            real_scan(context);
+            //test_scan(context);
         } else {
             //첫 스캔이면 아무 것도 반환 안 하고 n번째 스캔이면 results 에 이전 결과가 출력됨.
             Toast.makeText(context, "측정 실패", Toast.LENGTH_SHORT).show();
@@ -125,12 +122,6 @@ class WifiReceiver extends BroadcastReceiver {
 
             past_x = x;
             past_y = y;
-
-            if(navi.startDirections(x, y)) {
-                Toast.makeText(context, "목적지에 도착했습니다.", Toast.LENGTH_SHORT).show();
-            } else if(!navi.startDirections(x, y)) {
-                //wifiManager.startScan();
-            }
 
             Toast.makeText(context, "측정 완료!", Toast.LENGTH_SHORT).show();
         }
