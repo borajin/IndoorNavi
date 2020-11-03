@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +21,7 @@ public class NaviActivity extends AppCompatActivity {
     private WifiReceiver receiverWifi;
     private Button naviEndBtn;
     private TTS tts;
+    private TextView routeTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,7 @@ public class NaviActivity extends AppCompatActivity {
         setContentView(R.layout.activity_navi);
 
         map = findViewById(R.id.map);
+        routeTxt = findViewById(R.id.routeTxt);
         drawMap();
 
         tts = new TTS(this);
@@ -40,8 +43,14 @@ public class NaviActivity extends AppCompatActivity {
             }
         });
 
-        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifiManager.startScan();
+
+        //wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        //wifiManager.startScan();
+
+        Directions d = new Directions(this);
+        String route = d.getDirection("1번출구", "4번출구");
+
+        routeTxt.setText(route);
     }
 
     //마지막 초기화 작업?? onresume은 activity가 전면에 나타날 때, oncreate 호출 이후에도 호출됨.

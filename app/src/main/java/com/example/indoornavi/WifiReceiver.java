@@ -32,8 +32,8 @@ class WifiReceiver extends BroadcastReceiver {
         String action = intent.getAction();
 
         if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(action)) {
-            real_scan(context);
-            //test_scan(context);
+            //real_scan(context);
+            test_scan(context);
         } else {
             //첫 스캔이면 아무 것도 반환 안 하고 n번째 스캔이면 results 에 이전 결과가 출력됨.
             Toast.makeText(context, "측정 실패", Toast.LENGTH_SHORT).show();
@@ -88,7 +88,7 @@ class WifiReceiver extends BroadcastReceiver {
         testList.put("다익스트라", "909f33fba1ae;-80;0.0/909f33aba2f0;-79;0.0/909f332494d8;-91;0.0/000b819e85a1;-84;0.0/12e3c7052d16;-81;0.0/10e3c7052d16;-80;0.0/06300d8ada02;-77;0.0/06300d8ad8a2;-79;0.0/06300d8acf42;-47;0.0/06300d8a8662;-82;0.0/06300d8a5682;-87;0.0/0609b4760883;-56;0.0/0609b476087b;-84;0.0/00405abfe12b;-78;0.0/00405abfe113;-77;0.0/00405abfe112;-80;0.0/00405abf9503;-51;0.0/00405abf9502;-49;0.0/00405abf9501;-50;0.0/00405abf8d2b;-83;0.0/00405abf8d2a;-81;0.0/00405abf8d29;-81;0.0/00405abf7d53;-80;0.0/00405abf7d51;-79;0.0/00300d8ada00;-78;0.0/00300d8ad8a0;-81;0.0/00300d8acf40;-47;0.0/00300d8a8660;-87;0.0/0014bfa29146;-85;0.0/0009b47608ab;-88;0.0/0009b4760883;-57;0.0/00089ffcd7d4;-84;0.0/00089fba5720;-80;0.0/00089f8e10b9;-80;0.0/00300d20e456;-90;0.0/0609b47608ab;-88;0.0/00405abfe129;-78;0.0/00405abfe12a;-77;0.0/00405abf7d52;-80;0.0/00300d8a5680;-87;0.0/0609b47608a3;-82;0.0/0009b476087b;-82;0.0/06300d8ad982;-92;0.0/909f33ad36c6;-89;0.0/32cda736ee32;-80;0.0/0008520b0972;-87;0.0/");
 
 
-        String[] testAps = testList.get("다익스트라").split("/");
+        String[] testAps = testList.get("34번출구").split("/");
 
         List<SCANINFO> scanList = new ArrayList<>();
 

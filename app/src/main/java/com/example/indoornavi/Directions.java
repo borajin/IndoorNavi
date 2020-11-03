@@ -2,166 +2,290 @@ package com.example.indoornavi;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Vector;
-/*
-class node {
-    int id;
-    int x;
-    int y;
-    String location_info;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
-    node(int id, int x, int y, String location_info) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.location_info = location_info;
-    }
-}
 
 public class Directions {
     //경로생성, 진행방향 제시
     Context mContext;
-    Dikstra dikstra;
-    int id = 0;
-    ArrayList<node> m = new ArrayList<>();
+    Astar astar;
 
     TTS tts;
+
+    ArrayList<String> route;
 
     public Directions(Context context) {
         mContext = context;
         tts = new TTS(mContext);
+        astar = new Astar(context);
+    }
+
+    public String getDirection(String currentLocation, String destination) {
+        //경로 배열 보고 방향 제시
+        //만약 여기서 제시한 방향대로 안가고 반대로 갔다(자이로 센서 이용해서 알아내야 할듯) > 경로 (이건 다른 쪽에서 하기)
+
+        route = astar.search(currentLocation, destination);
+
+        StringBuilder r = new StringBuilder();
+
+        for(String n : route) {
+            r.append(n).append("->");
+        }
+
+        return r.toString();
+    }
+}
+
+class Astar {
+    private PriorityQueue<Node> openList;
+    private ArrayList<Node> closedList;
+    HashMap<Node, Integer> gMaps;
+    HashMap<Node, Integer> fMaps;
+    private int initialCapacity = 100;
+
+    public ArrayList<Node> n = new ArrayList<>();
+
+    Context mContext;
+
+    private static final String LOG_TAG = "Astar";
+
+    public Astar(Context context) {
+        gMaps = new HashMap<Node, Integer>();
+        fMaps = new HashMap<Node, Integer>();
+        openList = new PriorityQueue<Node>(initialCapacity, new fCompare());
+        closedList = new ArrayList<Node>();
+
+        this.mContext = context;
+
         createMap();
     }
 
-    public void createMap() {
+    private void createMap() {
+        DBAdapter db = new DBAdapter(mContext);
 
-        m.add(new node(1, 1, 1, "교차로"));
+        String sql = String.format("select IDX, CELL_X, CELL_Y, LOCATION_INFO, NEIGHBORS from TR_FPDB_MAP where LOCATION_INFO is not null");
+        Cursor cursor = db.search(sql);
 
-        double weight = Math.sqrt(Math.pow((m.get(i).x - m.get(j).x), 2) + Math.pow((m.get(i).y - m.get(j).y), 2));
-        dikstra.input(m.get(i).id, m.get(j).id, weight);
-    }
+        int i = 0;
 
-    public boolean startDirections(int x, int y) {
-        int current_x = x;
-        int current_y = y;
+        if(cursor != null) {
+            while (cursor.moveToNext()) {
+                int idx = cursor.getInt(cursor.getColumnIndex("IDX"));
+                int x = cursor.getInt(cursor.getColumnIndex("CELL_X"));
+                int y = cursor.getInt(cursor.getColumnIndex("CELL_Y"));
+                String locationInfo = cursor.getString(cursor.getColumnIndex("LOCATION_INFO"));
 
-        String destination = "2번 출구";
-        String direction = getDirection(current_x, current_y, destination);
+                String[] neighborsIdx = cursor.getString(cursor.getColumnIndex("NEIGHBORS")).split("/");
 
-        System.out.println("경로 : " + direction);
-        return false;
-    }
-
-    public String getDirection(int x, int y, String destination) {
-        //경로 배열 보고 방향 제시
-        //만약 여기서 제시한 방향대로 안가고 반대로 갔다(자이로 센서 이용해서 알아내야 할듯) > 경로 (이건 다른 쪽에서 하기)
-        int current_x = x;
-        int current_y = y;
-        String d = destination;
-
-        int start_node = 0;
-        for (int i = 0; i < m.size(); i++) {
-            if (current_x == m.get(i).x && current_y == m.get(i).y) {
-                start_node = m.get(i).id;
-                break;
+                n.add(new Node(idx, x, y, locationInfo.replace(" ", ""), neighborsIdx));
             }
+            cursor.close();
         }
 
-        int end_node = 0;
-        for (int i = 0; i < m.size(); i++) {
-            if (m.get(i).location_info.equals(destination)) {
-                end_node = m.get(i).id;
-            }
+        try {
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        Vector<Integer> route = dikstra.start(start_node, end_node);
-        return route.toString();
-    }
-}
+        for(int j = 0; j<n.size(); j++) {
+            for(String neighborIdx : n.get(j).getNeighborsIdx()) {
+                int nIdx = Integer.parseInt(neighborIdx);
 
-class Dikstra {
-    private int n;                  //노드들의 수
-    private double weights[][];    //노드들간의 가중치 저장할 변수
-
-    public Dikstra(int n) {
-        this.n = n;
-        weights = new double[n][n];
-    }
-
-    public void input(int i, int j, double w) {
-        weights[i][j] = w;
-        weights[j][i] = w;
-    }
-
-    public Vector<Integer> start(int start, int end) {
-        double distance[] = new double[n];     //최단 거리를 저장할 변수
-        boolean[] visit = new boolean[n];     //해당 노드를 방문했는지 체크할 변수
-
-        int prev[] = new int[n];
-        int stack[] = new int[n];
-
-        Vector<Integer> route = new Vector<>();
-
-        for (int i = 0; i < n; i++) {
-            //초기화
-            distance[i] = Integer.MAX_VALUE;
-            prev[i] = 0;
-            visit[i] = false;
-        }
-
-        distance[start] = 0; //시작점의 거리는 0
-
-        int k = 0;
-        int min;
-        for (int i = 0; i < n; i++) {
-            min = Integer.MAX_VALUE;
-            for (int j = 0; j < n; j++) {
-                //정점의 수만큼 반복
-                if (visit[j] == false && distance[j] < min) {
-                    //확인하지 않고 거리가 짧은 정점을 찾음
-                    k = j;
-                    min = (int) distance[j];
+                for(int k=0; k<n.size(); k++) {
+                    if(n.get(k).getIdx() == nIdx) {
+                        n.get(j).addNeighbor(n.get(k));
+                    }
                 }
             }
-            visit[k] = true; //해당정점확인체크
+        }
+    }
 
-            if (min == Integer.MAX_VALUE)
-                break;
+    public ArrayList<String> search(String currentLocation, String destination) {
 
-            // I->J 보다 I->K->J의 거리가 더 작으면 갱신.
-            for (int j = 0; j < n; j++) {
-                if (distance[k] + weights[k][j] < distance[j]) {
-                    distance[j] = distance[k] + weights[k][j]; //최단거리 저장
-                    prev[j] = k; // j로 가기위해 k를 거쳐야함
+
+        //todo: 지금 이부분 return node 로 하면 안먹히고 아래에 n.get(i) 로 하면 먹히는데.. 왜이러는겨 ;;
+        Node start = this.findLocationInfo(currentLocation);
+        Node end = this.findLocationInfo(destination);
+
+        //Node start = n.get(4);
+        //Node end = n.get(2);
+
+        if(start == null || end == null) {
+            return null;
+        }
+
+        openList.clear();
+        closedList.clear();
+
+        gMaps.put(start, 0);
+        openList.add(start);
+
+        while (!openList.isEmpty()) {
+            Node current = openList.element();
+
+            if (current.equals(end)) {
+                Log.d(LOG_TAG, "SUCCESS ASTAR");
+                return printPath(current);
+            }
+            closedList.add(openList.poll());
+            ArrayList<Node> neighbors = current.getNeighbors();
+
+            for (Node neighbor : neighbors) {
+                int gScore = gMaps.get(current) + h(neighbor, current); //실제 거리
+                int fScore = gScore + h(neighbor, end); //시작노드 ~ 목표노드까지 추정 거리
+
+                if (closedList.contains(neighbor)) {
+                    if (gMaps.get(neighbor) == null) {
+                        gMaps.put(neighbor, gScore);
+                    }
+                    if (fMaps.get(neighbor) == null) {
+                        fMaps.put(neighbor, fScore);
+                    }
+
+                    if (fScore >= fMaps.get(neighbor)) {
+                        continue;
+                    }
+                }
+                if (!openList.contains(neighbor) || fScore < fMaps.get(neighbor)) {
+                    neighbor.setParent(current);
+                    gMaps.put(neighbor, gScore);
+                    fMaps.put(neighbor, fScore);
+                    if (!openList.contains(neighbor)) {
+                        openList.add(neighbor);
+
+                    }
                 }
             }
         }
 
-        //콘솔에서 최단 경로 출력;
-        int tmp;
-        int top = -1;
-        tmp = end - 1;
-        while (true) {
-            stack[++top] = tmp + 1;
-            if (tmp == start - 1) break;
-            tmp = prev[tmp];
+        Log.d(LOG_TAG, "NO PATH");
+        return null;
+    }
+
+    //어떤 거리 알고리즘 쓸지에 따라 정확성, 속도 등 달라짐
+    private int h(Node node, Node goal) {
+        int x = node.getX() - goal.getX();
+        int y = node.getY() - goal.getY();
+        return x * x + y * y;
+    }
+
+    private ArrayList<String> printPath(Node node) {
+        ArrayList<String> route = new ArrayList<>();
+
+        route.add((String) node.getLocationInfo());
+
+        while (node.getParent() != null) {
+            node = node.getParent();
+            route.add((String) node.getLocationInfo());
         }
 
-        //역추적 결과 출력
-        route.removeAllElements();
-        for (int i = top; i > -1; i--) {
-            System.out.printf("%d", stack[i]);
-            route.add(stack[i]);
-        }
+        Collections.reverse(route);
 
         return route;
     }
+
+    private Node findLocationInfo(String locationInfo) {
+        for(int i=0; i<n.size(); i++) {
+            if(n.get(i).getLocationInfo().equals(locationInfo.replace(" ", ""))) {
+                return n.get(i);
+            }
+        }
+
+        Log.d("Astar", "find location info 실패");
+        return null;
+    }
+
+    class fCompare implements Comparator<Node> {
+
+        public int compare(Node o1, Node o2) {
+            if (fMaps.get(o1) < fMaps.get(o2)) {
+                return -1;
+            } else if (fMaps.get(o1) > fMaps.get(o2)) {
+                return 1;
+            } else {
+                return 1;
+            }
+        }
+    }
 }
 
+class Node {
+    private Node parent;
+    private ArrayList<Node> neighbors;
 
+    private int idx;
+    private int x;
+    private int y;
+    private String locationInfo;
+    private String[] neighborsIdx;
 
+    public Node() {
+        neighbors = new ArrayList<Node>();
+    }
 
-*/
+    public Node(int idx, int x, int y, String locationInfo, String[] neighborsIdx) {
+        this();
+        this.idx = idx;
+        this.x = x;
+        this.y = y;
+        this.locationInfo = locationInfo;
+        this.neighborsIdx = neighborsIdx;
+    }
+
+    public ArrayList<Node> getNeighbors() {
+        return neighbors;
+    }
+
+    public void setNeighbors(ArrayList<Node> neighbors) {
+        this.neighbors = neighbors;
+    }
+
+    public void addNeighbor(Node node) {
+        this.neighbors.add(node);
+    }
+
+    public void addNeighbors(Node... node) {
+        this.neighbors.addAll(Arrays.asList(node));
+    }
+
+    public Node getParent() {
+        return parent;
+    }
+
+    public void setParent(Node parent) {
+        this.parent = parent;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+    public int getIdx() {
+        return idx;
+    }
+
+    public String[] getNeighborsIdx() {
+        return neighborsIdx;
+    }
+
+    public String getLocationInfo() {
+        return locationInfo;
+    }
+
+    public boolean equals(Node n) {
+        return this.x == n.x && this.y == n.y;
+    }
+}
+
 

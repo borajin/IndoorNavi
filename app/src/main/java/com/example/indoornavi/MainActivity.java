@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (!target.exists() || target.length() <= 0) {
             ToastMsg("db파일을 다운로드 합니다.");
-            String DB_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id=1CFkCwkFlWmXIHPkJTdINVxvy2pHxfJbX";
+            String id = "19b9FX8iP56T96FnMbWgok_JyRupPM8-L";
+            String DB_DOWNLOAD_URL = "https://docs.google.com/uc?id=" + id + "&export=download";
             new DBdownload(this).execute(DB_DOWNLOAD_URL, DB_PATH, DB_NAME);
         } else {
             ToastMsg("db파일 있음");
