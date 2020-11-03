@@ -111,12 +111,8 @@ class Astar {
     public ArrayList<String> search(String currentLocation, String destination) {
 
 
-        //todo: 지금 이부분 return node 로 하면 안먹히고 아래에 n.get(i) 로 하면 먹히는데.. 왜이러는겨 ;;
         Node start = this.findLocationInfo(currentLocation);
         Node end = this.findLocationInfo(destination);
-
-        //Node start = n.get(4);
-        //Node end = n.get(2);
 
         if(start == null || end == null) {
             return null;
@@ -195,6 +191,7 @@ class Astar {
     private Node findLocationInfo(String locationInfo) {
         for(int i=0; i<n.size(); i++) {
             if(n.get(i).getLocationInfo().equals(locationInfo.replace(" ", ""))) {
+                Log.d("Astar", n.get(i).getLocationInfo() + " " + i);
                 return n.get(i);
             }
         }
@@ -227,12 +224,9 @@ class Node {
     private String locationInfo;
     private String[] neighborsIdx;
 
-    public Node() {
-        neighbors = new ArrayList<Node>();
-    }
-
     public Node(int idx, int x, int y, String locationInfo, String[] neighborsIdx) {
-        this();
+        neighbors = new ArrayList<Node>();
+
         this.idx = idx;
         this.x = x;
         this.y = y;
