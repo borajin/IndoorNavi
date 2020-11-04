@@ -27,7 +27,7 @@ public class Directions {
         astar = new Astar(context);
     }
 
-    public String getDirection(String currentLocation, String destination) {
+    public String getRoute(String currentLocation, String destination) {
         //경로 배열 보고 방향 제시
         //만약 여기서 제시한 방향대로 안가고 반대로 갔다(자이로 센서 이용해서 알아내야 할듯) > 경로 (이건 다른 쪽에서 하기)
 
@@ -40,6 +40,27 @@ public class Directions {
         }
 
         return r.toString();
+    }
+
+    public String getDirection(int x, int y, String nextLocation) {
+        int x1 = x;
+        int y1 = y;
+        int x2 = astar.findLocationInfo(nextLocation).getX();
+        int y2 = astar.findLocationInfo(nextLocation).getY();
+
+        //내가 변환한 cell 값이랑 tm_x tm_y 값이랑 반대방향? 이라서 tm_x tm_y로 바꿀 땐 음수가 왼쪽, 양수가 오른쪽이어야 함.
+        if(getAngle(x1, y1, x2, y2) < 0) {
+            Log.d("Astar", x + " " + y + " " + x2 + " " + y2);
+            return "오른쪽";
+        } else {
+            Log.d("Astar", x + " " + y + " " + x2 + " " + y2);
+            return "왼쪽";
+        }
+    }
+
+    private double getAngle(int x1, int y1, int x2, int y2) {
+        double rad = Math.atan2(y2 - y1, x2 - x1);
+        return (rad*180)/Math.PI ;
     }
 }
 
@@ -188,7 +209,7 @@ class Astar {
         return route;
     }
 
-    private Node findLocationInfo(String locationInfo) {
+    public Node findLocationInfo(String locationInfo) {
         for(int i=0; i<n.size(); i++) {
             if(n.get(i).getLocationInfo().equals(locationInfo.replace(" ", ""))) {
                 Log.d("Astar", n.get(i).getLocationInfo() + " " + i);

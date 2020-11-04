@@ -22,6 +22,7 @@ public class NaviActivity extends AppCompatActivity {
     private Button naviEndBtn;
     private TTS tts;
     private TextView routeTxt;
+    private TextView directionTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class NaviActivity extends AppCompatActivity {
 
         map = findViewById(R.id.map);
         routeTxt = findViewById(R.id.routeTxt);
+        directionTxt = findViewById(R.id.directionTxt);
         drawMap();
 
         tts = new TTS(this);
@@ -48,9 +50,11 @@ public class NaviActivity extends AppCompatActivity {
         //wifiManager.startScan();
 
         Directions d = new Directions(this);
-        String route = d.getDirection("1번출구", "4번출구");
-
+        String route = d.getRoute("1번출구", "4번출구");
         routeTxt.setText(route);
+
+        String direction = d.getDirection(3, 2, "3번출구");
+        directionTxt.setText(direction);
     }
 
     //마지막 초기화 작업?? onresume은 activity가 전면에 나타날 때, oncreate 호출 이후에도 호출됨.

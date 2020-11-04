@@ -26,6 +26,12 @@
             android:layout_height="wrap_content"
             android:text="routeTxt" />
 
+        <TextView
+            android:id="@+id/directionTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="directionTxt" />
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
