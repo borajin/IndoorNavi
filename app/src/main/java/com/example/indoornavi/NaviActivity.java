@@ -53,7 +53,7 @@ public class NaviActivity extends AppCompatActivity {
         String route = d.getRoute("1번출구", "4번출구");
         routeTxt.setText(route);
 
-        String direction = d.getDirection(3, 2, "3번출구");
+        String direction = d.getDirection(3.0, 2.0, 3.0, 1.0, "1번출구");
         directionTxt.setText(direction);
     }
 
@@ -104,9 +104,9 @@ public class NaviActivity extends AppCompatActivity {
 
             for (int j = 0; j <= 7; j++) {
                 ImageView cell = new ImageView(this);
-                cell.setId((i*100) + j);
+                cell.setId((i * 100) + j);
 
-                if(mapXY[i][j] == 1) {
+                if (mapXY[i][j] == 1) {
                     cell.setImageResource(R.drawable.cell_fill);
                 } else {
                     cell.setImageResource(R.drawable.cell_blank);

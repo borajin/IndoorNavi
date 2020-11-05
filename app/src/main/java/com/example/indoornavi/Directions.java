@@ -42,25 +42,44 @@ public class Directions {
         return r.toString();
     }
 
-    public String getDirection(int x, int y, String nextLocation) {
-        int x1 = x;
-        int y1 = y;
-        int x2 = astar.findLocationInfo(nextLocation).getX();
-        int y2 = astar.findLocationInfo(nextLocation).getY();
+    public String getDirection(double pastX, double pastY, double x, double y, String nextLocation) {
+        double x1 = x;
+        double y1 = y;
+        double x2 = astar.findLocationInfo(nextLocation).getX();
+        double y2 = astar.findLocationInfo(nextLocation).getY();
 
         //내가 변환한 cell 값이랑 tm_x tm_y 값이랑 반대방향? 이라서 tm_x tm_y로 바꿀 땐 음수가 왼쪽, 양수가 오른쪽이어야 함.
-        if(getAngle(x1, y1, x2, y2) < 0) {
+        if(getAngle(pastX, pastY, x1, y1, x2, y2) < 0) {
             Log.d("Astar", x + " " + y + " " + x2 + " " + y2);
-            return "오른쪽";
+            return "왼쪽" + -getAngle(pastX, pastY, x1, y1, x2, y2) + "도";
         } else {
             Log.d("Astar", x + " " + y + " " + x2 + " " + y2);
-            return "왼쪽";
+            return "오른쪽" + getAngle(pastX, pastY, x1, y1, x2, y2) + "도";
         }
     }
 
-    private double getAngle(int x1, int y1, int x2, int y2) {
-        double rad = Math.atan2(y2 - y1, x2 - x1);
-        return (rad*180)/Math.PI ;
+    private double getAngle(double pastX, double pastY, double x1, double y1, double x2, double y2) {
+        double past_x = pastX, past_y = pastY;
+        double current_x = x1, current_y = y1;
+        double to_x = x2, to_y = y2;
+
+        double go_x = current_x - past_x;
+        double go_y = current_y - past_y;
+
+        double to_dx = to_x - current_x;
+        double to_dy = to_y - current_y;
+
+        double location_degree = Math.toDegrees(Math.atan2(go_x, go_y));
+        double location_degree_rad = Math.toRadians(location_degree);
+
+        double dx = to_dx*Math.cos(location_degree_rad) - to_dy*Math.sin(location_degree_rad);
+        double dy = to_dx*Math.sin(location_degree_rad) + to_dy*Math.cos(location_degree_rad);
+
+        double degree = Math.toDegrees(Math.atan2(dx, dy));
+
+        System.out.println(dx + "," + dy + "," + location_degree + "," + degree);
+
+        return degree;
     }
 }
 
