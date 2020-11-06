@@ -16,11 +16,13 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class NaviActivity extends AppCompatActivity {
-    private TableLayout map;
+
     private WifiManager wifiManager;
     private WifiReceiver receiverWifi;
+    private Speech speech;
+
+    private TableLayout map;
     private Button naviEndBtn;
-    private TTS tts;
     private TextView routeTxt;
     private TextView directionTxt;
 
@@ -34,20 +36,20 @@ public class NaviActivity extends AppCompatActivity {
         directionTxt = findViewById(R.id.directionTxt);
         drawMap();
 
-        tts = new TTS(this);
+        speech = new Speech(this);
 
         naviEndBtn = findViewById(R.id.naviEndBtn);
         naviEndBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tts.startTTS("안내를 종료합니다.");
+                speech.say("안내를 종료합니다.");
                 finish();
             }
         });
 
 
-        //wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        //wifiManager.startScan();
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.startScan();
 
         Directions d = new Directions(this);
         String route = d.getRoute("1번출구", "4번출구");
@@ -77,7 +79,9 @@ public class NaviActivity extends AppCompatActivity {
     private void drawMap() {
         int[][] mapXY = new int[76][8];
 
-        DBAdapter db = new DBAdapter(this);
+        String DB_NAME = "/test.db";
+        DBAdapter db = new DBAdapter(this, DB_NAME);
+
         String sql = "select CELL_X, CELL_Y from TR_FPDB_MAP;";
         Cursor cursor = db.search(sql);
 

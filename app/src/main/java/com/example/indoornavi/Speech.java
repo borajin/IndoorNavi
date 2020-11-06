@@ -6,10 +6,38 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
-import java.util.ArrayList;
 
-public class STT {
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class Speech {
+    private STT stt;
+    private TTS tts;
+    private Context mContext;
+
+    Speech(Context mConext) {
+        this.mContext = mConext;
+        stt = new STT(mContext);
+        tts = new TTS(mContext);
+    }
+
+    public void say(String text) {
+        tts.startTTS(text);
+    }
+
+    public void litsen() {
+        stt.startSTT();
+    }
+
+    public void endSpeech() {
+        this.stt.endSTT();
+        this.tts.endTTS();
+    }
+}
+
+class STT {
     final String[] SUBWAY_LINE_4_KEYWORDS = {"장전", "부산대", "구서"};
     Context mContext;
     Intent sttIntent;
@@ -18,7 +46,7 @@ public class STT {
     String keyword = "";
     TTS tts;
 
-    public STT(Context mContext) {
+    STT(Context mContext) {
         this.mContext = mContext;
         sttIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         sttIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, mContext.getPackageName());
@@ -26,13 +54,14 @@ public class STT {
 
         tts = new TTS(mContext);
     }
-    public void startSTT() {
+
+    void startSTT() {
         mRecognizer = SpeechRecognizer.createSpeechRecognizer(mContext);
         mRecognizer.setRecognitionListener(listener);
         mRecognizer.startListening(sttIntent);
     }
 
-    public void endSTT() {
+    void endSTT() {
         if (mRecognizer != null) {
             mRecognizer.destroy();
             mRecognizer.cancel();
@@ -42,7 +71,7 @@ public class STT {
         tts.endTTS();
     }
 
-    public String getKeyword() {
+    String getKeyword() {
         return keyword;
     }
 
@@ -145,7 +174,7 @@ public class STT {
         String subway_line_4_keyword = typoEdit.typo_edit(speech, SUBWAY_LINE_4_KEYWORDS);
 
         if (subway_line_4_keyword.equals("ERROR")) {
-            tts.startTTS("알아듣지 못했어요. 다시 말씀해주세요.");
+            tts.startTTS("다시 말해.");
         } else {
             keyword = "navi@" + subway_line_4_keyword;
             tts.startTTS(subway_line_4_keyword + "역으로 안내하겠습니다.");
@@ -347,3 +376,53 @@ class TypoEdit {
     }
 }
 
+
+class TTS implements TextToSpeech.OnInitListener{
+    Context mContext;
+    TextToSpeech tts;
+
+    TTS(Context mContext) {
+        this.mContext = mContext;
+
+        tts = new TextToSpeech(mContext, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != android.speech.tts.TextToSpeech.ERROR) {
+                    tts.setLanguage(Locale.KOREAN);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onInit(int i) {
+        if (i == TextToSpeech.SUCCESS) {
+            tts.setPitch(1.0f);//목소리 톤1.0
+            tts.setSpeechRate(1.0f);//목소리 속도
+        } else {
+            ToastMsg("tts 초기화 실패");
+        }
+    }
+
+    //음성 메세지 출력용
+    void startTTS(String OutMsg) {
+        if (OutMsg.length() < 1) return;
+
+        if(!tts.isSpeaking()) {
+            tts.speak(OutMsg, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
+    void endTTS() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+            tts = null;
+        }
+    }
+
+    private void ToastMsg(final String msg) {
+        final String message = msg;
+        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    }
+}

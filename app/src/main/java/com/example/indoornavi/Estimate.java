@@ -19,7 +19,7 @@ public class Estimate {
     private DBAdapter db;
     private Cursor cursor;
 
-    private List<SCANINFO> scanList;
+    private ArrayList<SCANINFO> scanList;
 
     private class FP_POS {
         /*
@@ -52,28 +52,36 @@ public class Estimate {
             this.cell_y = cell_y;
         }
     }
+    private class SCANINFO {
+        public String infraID;  //mac
+        public double wf;       //rssi
+        public double wfRatio;  //rssi ratio
 
-    public Estimate(Context mContext, List<SCANINFO> scanList) {
-        this.context = mContext;
-        this.scanList = scanList;
+        SCANINFO(String infraID, double rssi) {
+            this.infraID = infraID;
+            double exp = -(-10. - rssi);
+            this.wf = Math.pow(10.0, exp / 20.0);
+            this.wfRatio = 0.0;
+        }
     }
 
-    public String test_main() {
-        //db 오픈
-        db = new DBAdapter(context);
+    public Estimate(Context mContext) {
+        this.context = mContext;
+        scanList = new ArrayList<>();
+        String DB_NAME = "/test.db";
+        db = new DBAdapter(context, DB_NAME);
+    }
 
-        //측정
-        String result = estimate(db, scanList);
+    public void addScanItem(String infraID, double rssi) {
+        scanList.add(new SCANINFO(infraID, rssi));
+    }
 
-        //db 닫기
-        try {
-            db.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "db close error";
-        }
+    public ArrayList<SCANINFO> getScanList() {
+        return scanList;
+    }
 
-        return result;
+    public String startEstimate() {
+        return estimate(db, scanList);
     }
 
     //DB에 AP정보가 존재하는지 체크
@@ -188,5 +196,13 @@ public class Estimate {
         }
 
         return "NORESULT";
+    }
+
+    public void endEstimate() {
+        try {
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

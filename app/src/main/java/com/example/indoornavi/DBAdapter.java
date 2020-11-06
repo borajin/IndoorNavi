@@ -7,16 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import java.io.File;
 
 public class DBAdapter {
-    private Context context;
     private SQLiteDatabase db;
 
-    private static String DB_PATH = "/data/data/com.example.indoornavi/databases";
-    private static String DB_NAME = "/test.db";
-
-    public DBAdapter(Context context) {
+    public DBAdapter(Context context, String DB_NAME) {
         super();
-        this.context = context;
-
+        String DB_PATH = "/data/data/" + context.getPackageName()+ "/databases";
         File dbCopy = new File(DB_PATH + DB_NAME);
 
         if (dbCopy.exists()) {

@@ -108,7 +108,8 @@ class Astar {
     }
 
     private void createMap() {
-        DBAdapter db = new DBAdapter(mContext);
+        String DB_NAME = "/test.db";
+        DBAdapter db = new DBAdapter(mContext, DB_NAME);
 
         String sql = String.format("select IDX, CELL_X, CELL_Y, LOCATION_INFO, NEIGHBORS from TR_FPDB_MAP where LOCATION_INFO is not null");
         Cursor cursor = db.search(sql);

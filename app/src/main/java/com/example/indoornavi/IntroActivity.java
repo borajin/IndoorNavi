@@ -2,23 +2,15 @@ package com.example.indoornavi;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.File;
-
 /*
     권한설정
     GPS, WIFI 설정
-    DB 다운로드
  */
 
 public class IntroActivity extends AppCompatActivity {
